@@ -48,7 +48,7 @@ strategies and caching to minimize overhead.
 
 ## Permissions
 
-This project has been refactored to require only the minimal permissions:
+This project requires these minimal permissions:
 
 - `--allow-env`
   - `LOG_LEVEL`
@@ -143,7 +143,7 @@ try {
 Run the CLI directly with the required Deno permissions:
 
 ```bash
-deno run --allow-env --allow-net --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv src/cli.ts [options]
+deno run detect [options]
 ```
 
 **Options:**
@@ -159,17 +159,17 @@ deno run --allow-env --allow-net --allow-read=./deno.jsonc,/var/run/secrets/kube
 
 1. **Basic detection:**
    ```bash
-   deno run check
+   deno run detect
    ```
 
 2. **Verbose (debug) output:**
    ```bash
-   deno run check --verbose
+   deno run detect --verbose
    ```
 
 3. **JSON-formatted logs:**
    ```bash
-   deno run check --json
+   deno run detect --json
    ```
 
 ## API Reference
