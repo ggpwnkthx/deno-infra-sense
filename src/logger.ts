@@ -1,6 +1,6 @@
 // src/logger.ts
 
-import * as log from "jsr:@std/log";
+import * as log from "jsr:@std/log@0.224.14";
 
 /** Re-export the Logger type from @std/log for convenience. */
 export type Logger = log.Logger;

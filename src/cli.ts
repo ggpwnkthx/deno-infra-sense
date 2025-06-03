@@ -1,7 +1,7 @@
 // src/cli.ts
 
-import { parseArgs } from "jsr:@std/cli";
-import { parse as parseJsonc } from "jsr:@std/jsonc";
+import { parseArgs } from "jsr:@std/cli@1.0.19";
+import { parse as parseJsonc } from "jsr:@std/jsonc@1.0.2";
 import { getDefaultLogger, setupLogger } from "./logger.ts";
 import detect from "./mod.ts";
 

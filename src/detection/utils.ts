@@ -1,7 +1,7 @@
 // src/detection/utils.ts
 
 import { exists } from "jsr:@std/fs";
-import type { Logger } from "jsr:@std/log";
+import type { Logger } from "../logger.ts";
 
 /**
  * Attempts to detect Kubernetes by checking:

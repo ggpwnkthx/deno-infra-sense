@@ -11,8 +11,7 @@ import {
   detectRkt,
   detectSystemdNspawn,
 } from "../detection/utils.ts";
-import type { Logger } from "jsr:@std/log";
-import { getDefaultLogger } from "../logger.ts";
+import { getDefaultLogger, type Logger } from "../logger.ts";
 
 /**
  * Enum representing all possible container platforms or the host environment.
