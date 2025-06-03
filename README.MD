@@ -50,17 +50,20 @@ strategies and caching to minimize overhead.
 
 This project has been refactored to require only the minimal permissions:
 
-- `--allow-env`\
-  To read environment variables such as `KUBERNETES_SERVICE_HOST` and
-  `container`.
-- `--allow-net`\
-  To perform DNS lookups for `kubernetes.default.svc`.
-- `--allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv`\
-  To read:
-  - `deno.jsonc` for CLI version and name.
-  - `/var/run/secrets/kubernetes.io/serviceaccount` to detect the Kubernetes
-    ServiceAccount mount.
-  - `/.dockerenv` to detect Docker runtime.
+- `--allow-env`
+  - `LOG_LEVEL`
+  - `LOG_JSON`
+  - `LOG_FILE`
+  - `CONTAINER`
+  - `KUBERNETES_SERVICE_HOST`
+- `--allow-net`
+  - `kubernetes.default.svc:53`
+- `--allow-read`
+  - `deno.jsonc`
+  - `/var/run/secrets/kubernetes.io/serviceaccount`
+  - `/.dockerenv`
+  - `/run/.containerenv`
+  - `/run/systemd/nspawn/in_container`
 
 Example CLI invocation:
 
