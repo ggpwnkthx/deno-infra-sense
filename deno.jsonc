@@ -1,0 +1,17 @@
+{
+  "name": "@ggpwnkthx/infra-sense",
+  "version": "0.0.1",
+  "license": "MIT",
+  "exports": "./src/mod.ts",
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "always"
+  },
+  "tasks": {
+    "check": "deno run --allow-env=LOG_LEVEL,LOG_JSON,LOG_FILE,CONTAINER,KUBERNETES_SERVICE_HOST --allow-net=kubernetes.default.svc:53 --deny-net --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv,/run/.containerenv,/run/systemd/nspawn/in_container src/cli.ts"
+  }
+}

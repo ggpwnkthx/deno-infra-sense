@@ -1,0 +1,19 @@
+# k8s/service.yaml
+#
+# Optional Service manifest. Since this application only logs its detection,
+# there’s no HTTP port to expose. You can skip this if you don’t need network access.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: deno-detector-service
+  labels:
+    app: deno-detector
+spec:
+  selector:
+    app: deno-detector
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

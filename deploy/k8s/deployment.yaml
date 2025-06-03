@@ -1,0 +1,34 @@
+# k8s/deployment.yaml
+#
+# Kubernetes Deployment for the Deno container detector.
+# Adjust image: tag to your registry/image if you push it.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deno-container-detector
+  labels:
+    app: deno-detector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deno-detector
+  template:
+    metadata:
+      labels:
+        app: deno-detector
+    spec:
+      containers:
+        - name: deno-detector
+          image: deno-detector:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            [
+              "deno",
+              "run",
+              "--allow-read=/proc/1/cgroup,/app/src",
+              "--no-check",
+              "main.ts",
+            ]
+      restartPolicy: OnFailure
