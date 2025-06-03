@@ -1,10 +1,5 @@
 # @ggpwnkthx/deno-infra-sense
 
-**Version:** 0.0.1\
-**License:** MIT
-
----
-
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -27,8 +22,6 @@
 11. [Contributing](#contributing)
 12. [License](#license)
 
----
-
 ## Introduction
 
 `@ggpwnkthx/infra-sense` is a lightweight Deno library and CLI tool designed to
@@ -39,8 +32,6 @@ CRI-O, containerd, Rkt, LXC/LXD, systemd-nspawn, and Kubernetes.
 This project aims to provide a simple API and a CLI interface for reliably
 determining the current container context, using environment-based detection
 strategies and caching to minimize overhead.
-
----
 
 ## Features
 
@@ -54,8 +45,6 @@ strategies and caching to minimize overhead.
   text-formatted logging, with optional file handling.
 - **CLI and Library Modes:** Can be used as a standalone CLI or imported as a
   library in other Deno projects.
-
----
 
 ## Permissions
 
@@ -79,15 +68,11 @@ Example CLI invocation:
 deno run --allow-env --allow-net --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv src/cli.ts
 ```
 
----
-
 ## Prerequisites
 
 - **Deno** 2.0 or higher.
 - Permissions as listed above to allow environment, read, and network
   operations.
-
----
 
 ## Installation
 
@@ -104,8 +89,6 @@ Alternatively, clone the repository and run locally:
 git clone https://github.com/ggpwnkthx/deno-infra-sense.git
 cd infra-sense
 ```
-
----
 
 ## Project Structure
 
@@ -132,8 +115,6 @@ infra-sense/
 - `deno.jsonc`: Project configuration, tasks, and metadata.
 - `README.md`: Project documentation (this file).
 
----
-
 ## Usage
 
 ### As a Library
@@ -153,8 +134,6 @@ try {
 
 - **`detect()`**: Performs detection and returns a `ContainerPlatform` enum
   value indicating the detected environment.
-
----
 
 ### Command-Line Interface (CLI)
 
@@ -190,8 +169,6 @@ deno run --allow-env --allow-net --allow-read=./deno.jsonc,/var/run/secrets/kube
    deno run check --json
    ```
 
----
-
 ## API Reference
 
 ### `detect(logger?: Logger): Promise<ContainerPlatform>`
@@ -211,8 +188,6 @@ const platform = await detect();
 console.log(platform); // e.g., "Docker"
 ```
 
----
-
 ### `ContainerPlatform` Enum
 
 Represents all supported container platforms and the host environment:
@@ -229,8 +204,6 @@ Represents all supported container platforms and the host environment:
 - `LXCLXD` - "LXC/LXD"
 - `SystemdNspawn` - "systemd-nspawn"
 - `Host` - "Host (no recognized container)"
-
----
 
 ## Detection Logic
 
@@ -276,8 +249,6 @@ The refactored detection logic proceeds as follows:
 All detectors use a `safeDetect` wrapper to catch and log errors without halting
 the detection process.
 
----
-
 ## Development
 
 1. **Clone the repository:**
@@ -301,8 +272,6 @@ the detection process.
    deno run --allow-env=LOG_LEVEL,LOG_JSON,LOG_FILE,CONTAINER,KUBERNETES_SERVICE_HOST --allow-net=kubernetes.default.svc:53 --deny-net --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv,/run/.containerenv,/run/systemd/nspawn/in_container src/cli.ts --verbose
    ```
 
----
-
 ## Contributing
 
 Contributions are welcome! Please follow these guidelines:
@@ -311,8 +280,6 @@ Contributions are welcome! Please follow these guidelines:
 2. Write tests and ensure all existing tests pass.
 3. Follow the existing code style (see `deno fmt` settings in `deno.jsonc`).
 4. Submit a pull request with a clear description of your changes.
-
----
 
 ## License
 
