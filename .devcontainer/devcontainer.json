@@ -1,5 +1,5 @@
 {
-  "name": "deno-faas",
+  "name": "deno-infra-sense",
   "build": {
     "dockerfile": "Dockerfile"
   },
