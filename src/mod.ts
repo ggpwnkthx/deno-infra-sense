@@ -1,9 +1,7 @@
 // src/mod.ts
 
 import { getDefaultLogger, type Logger } from "./logger.ts";
-import detectContainerPlatform, {
-  type ContainerPlatform,
-} from "./detection/mod.ts";
+import detectContainerPlatform, { ContainerPlatform } from "./detection/mod.ts";
 
 /**
  * Primary exported detection function. Wraps the container platform detection
@@ -33,4 +31,4 @@ export default async function detect(
   }
 }
 
-export { type ContainerPlatform, detect };
+export { ContainerPlatform, detect };
