@@ -6,29 +6,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deno-container-detector
+  name: infra-sense-app
   labels:
-    app: deno-detector
+    app: infra-sense
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deno-detector
+      app: infra-sense
   template:
     metadata:
       labels:
-        app: deno-detector
+        app: infra-sense
     spec:
       containers:
-        - name: deno-detector
-          image: deno-detector:latest
+        - name: infra-sense
+          image: infra-sense:latest
           imagePullPolicy: IfNotPresent
           command:
             [
               "deno",
               "run",
-              "--allow-read=/proc/1/cgroup,/app/src",
-              "--no-check",
-              "main.ts",
+              "detect",
             ]
       restartPolicy: OnFailure

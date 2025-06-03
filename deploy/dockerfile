@@ -9,4 +9,4 @@ FROM gcr.io/distroless/static:nonroot
 COPY --from=builder /deno /deno
 COPY --from=builder /app /app
 USER nonroot:nonroot
-ENTRYPOINT ["/deno", "run", "check"]
+ENTRYPOINT ["/deno", "run", "detect"]
