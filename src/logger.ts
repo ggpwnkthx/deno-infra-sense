@@ -145,9 +145,7 @@ export function getDefaultLogger(
 ): Logger {
   const logger = log.getLogger(name);
   if (logger.handlers.length === 0) {
-    throw new Error(
-      `Logger "${name}" has not been initialized. Call setupLogger() first.`,
-    );
+    setupLogger();
   }
   return logger;
 }
