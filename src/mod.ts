@@ -32,3 +32,5 @@ export default async function detect(
     throw error;
   }
 }
+
+export { type ContainerPlatform, detect };
