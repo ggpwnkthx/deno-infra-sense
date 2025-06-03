@@ -1,6 +1,6 @@
 // src/detection/utils.ts
 
-import { exists } from "jsr:@std/fs";
+import { exists } from "jsr:@std/fs@1.0.18";
 import type { Logger } from "../logger.ts";
 
 /**
