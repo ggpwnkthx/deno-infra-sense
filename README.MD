@@ -1,10 +1,10 @@
-# @ggpwnkthx/infra-sense
+# Infra-Sense
 
-`@ggpwnkthx/infra-sense` is a lightweight Deno library and CLI tool designed to
-detect the container platform or host environment in which a Deno process is
-running. It supports various container runtimes (Docker, Podman, CRI-O,
-containerd, Rkt, LXC/LXD, systemd-nspawn) and Kubernetes, providing a simple API
-and command-line interface for reliable environment detection.
+A TypeScript-based, lightweight Deno library and CLI tool designed to detect the
+container platform or host environment in which a Deno process is running. It
+supports various container runtimes (Docker, Podman, CRI-O, containerd, Rkt,
+LXC/LXD, systemd-nspawn) and Kubernetes, providing a simple API and command-line
+interface for reliable environment detection.
 
 ## Table of Contents
 
