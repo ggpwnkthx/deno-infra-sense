@@ -1,34 +1,36 @@
 // src/mod.ts
 
-import { getDefaultLogger, type Logger } from "./logger.ts";
-import detectContainerPlatform, { ContainerPlatform } from "./detection/mod.ts";
+import type { Logger } from "./logger.ts";
+import detectContainerPlatform from "./detection/mod.ts";
+import type { ContainerPlatform } from "./detection/types.ts";
 
 /**
- * Primary exported detection function. Wraps the container platform detection
- * with logging. Does not exit the process; any errors are logged and rethrown.
+ * Main exported function. Wraps container‐platform detection
+ * with optional logging. Returns a ContainerPlatform object
+ * (structured as { type, runtime, displayName }).
  *
- * @param logger - Optional Logger instance. If not provided, uses the default logger.
- * @returns Promise resolving to the detected `ContainerPlatform` enum value.
- * @throws Any error encountered during detection is rethrown after logging.
+ * @param logger - Optional Logger (defaults to console if omitted).
+ * @returns Promise resolving to a ContainerPlatform interface.
+ * @throws Re‐throws any error, after logging.
  */
 export default async function detect(
-  logger?: Logger,
+  logger: Logger = console,
 ): Promise<ContainerPlatform> {
-  const actualLogger = logger ?? getDefaultLogger();
-  actualLogger.debug("Starting container platform detection...");
+  logger.debug("Starting container platform detection...");
 
   try {
-    const platform = await detectContainerPlatform(actualLogger);
+    const platform = await detectContainerPlatform(logger);
     return platform;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    actualLogger.error(`Error while detecting container platform: ${message}`);
+    logger.error(`Error while detecting container platform: ${message}`);
     if (error instanceof Error && error.stack) {
-      actualLogger.error(error.stack);
+      logger.error(error.stack);
     }
-    // Rethrow so the caller (e.g., CLI) can handle process exit
+    // Rethrow so that callers (e.g. CLI) can handle exit codes, etc.
     throw error;
   }
 }
 
-export { ContainerPlatform, detect };
+export { detect };
+export type { ContainerPlatform };

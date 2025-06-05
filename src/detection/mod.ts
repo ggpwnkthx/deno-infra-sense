@@ -11,38 +11,21 @@ import {
   detectRkt,
   detectSystemdNspawn,
 } from "../detection/utils.ts";
-import { getDefaultLogger, type Logger } from "../logger.ts";
+import type { Logger } from "../logger.ts";
+import type { ContainerPlatform, ContainerPlatformKey } from "./types.ts";
+import { ContainerPlatforms } from "./types.ts";
 
 /**
- * Enum representing all possible container platforms or the host environment.
- */
-export enum ContainerPlatform {
-  KubernetesCriO = "Kubernetes (CRI-O)",
-  KubernetesDocker = "Kubernetes (Docker)",
-  KubernetesOther = "Kubernetes (other)",
-  Docker = "Docker",
-  Podman = "Podman",
-  CRIO = "CRI-O",
-  DockerCgroup = "Docker (via cgroup)",
-  Containerd = "containerd",
-  Rkt = "rkt",
-  LXCLXD = "LXC/LXD",
-  SystemdNspawn = "systemd-nspawn",
-  Host = "Host (no recognized container)",
-}
-
-/**
- * Type representing a detection strategy: a human-readable label and an async
- * function that returns `true` if the platform is detected, or `false` otherwise.
+ * A detection entry: the key is one of the ContainerPlatform keys,
+ * and `fn` is the function that returns true/false if that platform is detected.
  */
 type Detector = {
   /**
-   * Label to identify the container platform if detection succeeds.
+   * One of the keys in ContainerPlatforms (e.g. "Docker", "KubernetesCriO", etc.)
    */
-  label: ContainerPlatform;
+  labelKey: ContainerPlatformKey;
   /**
-   * Async function that attempts to detect the platform. It receives a Logger
-   * and returns a Promise that resolves to `true` if detection succeeds, `false` otherwise.
+   * Async function that attempts to detect the platform. Returns `true` if detected.
    */
   fn: (logger: Logger) => boolean | Promise<boolean>;
 };
@@ -51,156 +34,151 @@ type Detector = {
  * Safely executes a detector function. Any thrown error is caught, logged as an error,
  * and treated as a non-detection (returns false).
  *
- * @param fn - Detector function accepting a Logger and returning Promise<boolean>.
- * @param label - Label of the detector, used for logging context.
+ * @param fn - Detector function accepting a Logger and returning Promise<boolean> (or boolean).
+ * @param labelKey - Key into ContainerPlatforms, used to fetch the displayName for logging.
  * @param logger - Logger instance used to record debug/error messages.
- * @returns A Promise that resolves to `true` if detection succeeded, or `false` if not or on error.
+ * @returns A Promise that resolves to `true` if detection succeeded, `false` otherwise.
  */
 async function safeDetect(
   fn: (logger: Logger) => boolean | Promise<boolean>,
-  label: string,
+  labelKey: ContainerPlatformKey,
   logger: Logger,
 ): Promise<boolean> {
+  const displayName = ContainerPlatforms[labelKey].displayName;
   try {
     const detected = await fn(logger);
-    logger.debug(`Detector [${label}] → ${detected}`);
+    logger.debug(`Detector [${displayName}] → ${detected}`);
     return detected;
   } catch (error) {
-    // Log the error but suppress it to avoid failing the entire detection process.
     const message = error instanceof Error ? error.message : String(error);
-    logger.error(`Detector error suppressed [${label}]: ${message}`);
+    logger.error(
+      `Detector error suppressed [${displayName}]: ${message}`,
+    );
     return false;
   }
 }
 
 /**
- * Attempts to determine which container runtime is used within a Kubernetes pod.
- * Priority:
- *   1. CRI-O
- *   2. Docker via cgroup
- *   3. Fallback to "other" if neither CRI-O nor Docker is detected
- *
- * @param logger - Logger instance for debug/error output.
- * @returns A Promise resolving to the specific `ContainerPlatform` value for Kubernetes.
+ * When inside Kubernetes, distinguish between CRI-O, Docker, or “other”:
+ * Priority: CRI-O → Docker via cgroup → fallback = other.
  */
 async function detectKubernetesPlatform(
   logger: Logger,
 ): Promise<ContainerPlatform> {
-  // Check CRI-O first
-  if (await safeDetect(detectCrio, ContainerPlatform.KubernetesCriO, logger)) {
-    return ContainerPlatform.KubernetesCriO;
+  // 1. Check CRI-O first
+  if (
+    await safeDetect(detectCrio, "KubernetesCriO", logger)
+  ) {
+    return ContainerPlatforms.KubernetesCriO;
   }
 
-  // If not CRI-O, check Docker via cgroup
+  // 2. If not CRI-O, check Docker via cgroup
   if (
     await safeDetect(
       detectDockerCgroup,
-      ContainerPlatform.KubernetesDocker,
+      "KubernetesDocker",
       logger,
     )
   ) {
-    return ContainerPlatform.KubernetesDocker;
+    return ContainerPlatforms.KubernetesDocker;
   }
 
-  // Neither CRI-O nor Docker detected; mark as "other" Kubernetes runtime
+  // 3. Neither CRI-O nor Docker detected; mark as “other”
   logger.debug("Kubernetes runtime detected as 'other'");
-  return ContainerPlatform.KubernetesOther;
+  return ContainerPlatforms.KubernetesOther;
 }
 
 /**
- * Ordered list of detectors to run when not in Kubernetes. Each detector checks
- * for a specific container platform. The order indicates priority: first match wins.
+ * Ordered detectors for non-Kubernetes (standalone) environments.
+ * Each entry’s `labelKey` corresponds to a ContainerPlatforms key.
+ * The first one that returns true “wins.”
  */
 const standaloneDetectors: Detector[] = [
-  { label: ContainerPlatform.Docker, fn: detectDockerEnv },
-  { label: ContainerPlatform.Podman, fn: detectPodman },
-  { label: ContainerPlatform.CRIO, fn: detectCrio },
-  { label: ContainerPlatform.DockerCgroup, fn: detectDockerCgroup },
-  { label: ContainerPlatform.Containerd, fn: detectContainerd },
-  { label: ContainerPlatform.Rkt, fn: detectRkt },
-  { label: ContainerPlatform.LXCLXD, fn: detectLXC },
-  { label: ContainerPlatform.SystemdNspawn, fn: detectSystemdNspawn },
+  { labelKey: "Docker", fn: detectDockerEnv },
+  { labelKey: "Podman", fn: detectPodman },
+  { labelKey: "Crio", fn: detectCrio },
+  { labelKey: "DockerCgroup", fn: detectDockerCgroup },
+  { labelKey: "Containerd", fn: detectContainerd },
+  { labelKey: "Rkt", fn: detectRkt },
+  { labelKey: "LXCLXD", fn: detectLXC },
+  { labelKey: "SystemdNspawn", fn: detectSystemdNspawn },
 ];
 
 /**
- * Internal cache holding the last detected platform and the timestamp of detection.
- * Used to avoid redundant checks within a short time window.
+ * Internal cache to avoid re-running detection too often.
  */
-let _cachedResult: { platform: ContainerPlatform; timestamp: number } | null =
-  null;
+let _cachedResult:
+  | { platform: ContainerPlatform; timestamp: number }
+  | null = null;
 
-/**
- * Maximum age (in milliseconds) of the cached detection result before it is considered stale.
- * Default: 30 seconds.
- */
+/** Cache TTL: 30 seconds. */
 const CACHE_TTL_MS = 30_000;
 
 /**
- * Clears the cached detection result, forcing the next call to `detectContainerPlatform`
- * to rerun all detection logic.
+ * Clears any cached detection result so that the next `detectContainerPlatform`
+ * call does a full re-detection.
  */
 export function resetCachedPlatform(): void {
   _cachedResult = null;
 }
 
 /**
- * Detects the current container platform (or host) in which this process is running.
- * Uses a cache to avoid re-running expensive checks on each invocation. The detection logic is:
+ * Detects the current container platform (or Host) in which this process is running.
+ * Uses the following logic:
  *
- * 1. If cache is valid (not older than CACHE_TTL_MS and forceRefresh is false), return cached result.
- * 2. Check if running inside Kubernetes:
- *    - If true, call `detectKubernetesPlatform` to distinguish CRI-O, Docker, or other.
- * 3. If not in Kubernetes, run each detector in `standaloneDetectors` in order; return first match.
- * 4. If no match, assume Host.
+ * 1. If cached result is still fresh (and forceRefresh !== true), return it.
+ * 2. Check if inside Kubernetes (via detectKubernetes):
+ *    - If yes, call detectKubernetesPlatform() to pick CRI-O / Docker / Other.
+ * 3. Otherwise, run through `standaloneDetectors` in priority order; return first match.
+ * 4. If no match, return Host.
  *
- * @param logger - Optional Logger instance; if not provided, the default logger from `getDefaultLogger()` is used.
- * @param options - Optional configuration.
- *   - `forceRefresh` (boolean): if true, ignore cache and rerun all detection steps.
- * @returns A Promise resolving to the detected `ContainerPlatform` value.
+ * @param logger - Optional Logger instance (defaults to console if omitted).
+ * @param options.forceRefresh - If true, ignore the cache and re-run everything.
+ * @returns A Promise resolving to the detected ContainerPlatform object.
  */
 export async function detectContainerPlatform(
-  logger?: Logger,
+  logger: Logger,
   options?: { forceRefresh?: boolean },
 ): Promise<ContainerPlatform> {
-  // Use provided logger or fallback to default
-  const actualLogger = logger ?? getDefaultLogger();
   const now = Date.now();
 
-  // Return cached result if still valid and not force-refreshing
+  // 1. Return cached result if valid
   if (
     !options?.forceRefresh &&
     _cachedResult !== null &&
     now - _cachedResult.timestamp <= CACHE_TTL_MS
   ) {
-    actualLogger.debug(
-      `Returning cached platform: ${_cachedResult.platform}`,
+    logger.debug(
+      `Returning cached platform: ${_cachedResult.platform.displayName}`,
     );
     return _cachedResult.platform;
   }
 
-  // 1. Check for Kubernetes environment
-  if (await safeDetect(detectKubernetes, "Kubernetes", actualLogger)) {
-    actualLogger.debug("Inside Kubernetes environment");
-    const platform = await detectKubernetesPlatform(actualLogger);
-    actualLogger.debug(`Detected Kubernetes platform: ${platform}`);
-    // Cache result
+  // 2. Check for Kubernetes first
+  if (await safeDetect(detectKubernetes, "KubernetesOther", logger)) {
+    logger.debug("Inside Kubernetes environment");
+    const platform = await detectKubernetesPlatform(logger);
+    logger.debug(
+      `Detected Kubernetes platform: ${platform.displayName}`,
+    );
     _cachedResult = { platform, timestamp: now };
     return platform;
   }
 
-  // 2. Not in Kubernetes: run each standalone detector in priority order
-  for (const { label, fn } of standaloneDetectors) {
-    if (await safeDetect(fn, label, actualLogger)) {
-      actualLogger.debug(`Detected container platform: ${label}`);
-      _cachedResult = { platform: label, timestamp: now };
-      return label;
+  // 3. Run standalone detectors in order
+  for (const { labelKey, fn } of standaloneDetectors) {
+    if (await safeDetect(fn, labelKey, logger)) {
+      const platform = ContainerPlatforms[labelKey];
+      logger.debug(`Detected container platform: ${platform.displayName}`);
+      _cachedResult = { platform, timestamp: now };
+      return platform;
     }
   }
 
-  // 3. No container detected: default to Host
-  const hostPlatform = ContainerPlatform.Host;
+  // 4. Fallback to Host
+  const hostPlatform = ContainerPlatforms.Host;
   _cachedResult = { platform: hostPlatform, timestamp: now };
-  actualLogger.debug(
+  logger.debug(
     "No container detected; defaulting to host environment",
   );
   return hostPlatform;

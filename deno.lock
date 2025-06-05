@@ -1,10 +1,13 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@ggpwnkthx/generic-cli@*": "0.1.0",
+    "jsr:@ggpwnkthx/generic-cli@0.1.1": "0.1.1",
     "jsr:@std/assert@0.224": "0.224.0",
     "jsr:@std/cli@*": "1.0.19",
     "jsr:@std/cli@1.0.19": "1.0.19",
     "jsr:@std/flags@0.224.0": "0.224.0",
+    "jsr:@std/fmt@1.0.8": "1.0.8",
     "jsr:@std/fmt@^1.0.5": "1.0.8",
     "jsr:@std/fs@*": "1.0.18",
     "jsr:@std/fs@1.0.18": "1.0.18",
@@ -15,9 +18,37 @@
     "jsr:@std/jsonc@1.0.2": "1.0.2",
     "jsr:@std/log@*": "0.224.14",
     "jsr:@std/log@0.224.14": "0.224.14",
-    "jsr:@std/path@^1.1.0": "1.1.0"
+    "jsr:@std/path@^1.1.0": "1.1.0",
+    "jsr:@std/yaml@1.0.7": "1.0.7",
+    "npm:@opentelemetry/api@1.9.0": "1.9.0",
+    "npm:zod@*": "3.25.51",
+    "npm:zod@3.25.51": "3.25.51"
   },
   "jsr": {
+    "@ggpwnkthx/generic-cli@0.1.0": {
+      "integrity": "f15ff346f0b11e1c3750afc652a54f10eaa31031ebbbdbc0d66fdd7b870f3046",
+      "dependencies": [
+        "jsr:@std/cli@1.0.19",
+        "jsr:@std/fmt@1.0.8",
+        "jsr:@std/fs@1.0.18",
+        "jsr:@std/jsonc@1.0.2",
+        "jsr:@std/yaml",
+        "npm:@opentelemetry/api",
+        "npm:zod@3.25.51"
+      ]
+    },
+    "@ggpwnkthx/generic-cli@0.1.1": {
+      "integrity": "0c7540d9347cb2323f490881978e36e7729f406a1b4a28b6d6a6679b381a58cd",
+      "dependencies": [
+        "jsr:@std/cli@1.0.19",
+        "jsr:@std/fmt@1.0.8",
+        "jsr:@std/fs@1.0.18",
+        "jsr:@std/jsonc@1.0.2",
+        "jsr:@std/yaml",
+        "npm:@opentelemetry/api",
+        "npm:zod@3.25.51"
+      ]
+    },
     "@std/assert@0.224.0": {
       "integrity": "8643233ec7aec38a940a8264a6e3eed9bfa44e7a71cc6b3c8874213ff401967f"
     },
@@ -54,13 +85,29 @@
     "@std/log@0.224.14": {
       "integrity": "257f7adceee3b53bb2bc86c7242e7d1bc59729e57d4981c4a7e5b876c808f05e",
       "dependencies": [
-        "jsr:@std/fmt",
+        "jsr:@std/fmt@^1.0.5",
         "jsr:@std/fs@^1.0.11",
         "jsr:@std/io"
       ]
     },
     "@std/path@1.1.0": {
       "integrity": "ddc94f8e3c275627281cbc23341df6b8bcc874d70374f75fec2533521e3d6886"
+    },
+    "@std/yaml@1.0.7": {
+      "integrity": "b4b9f6a625a6827ca2b75a3d240558b5ffd8b9a29945ec7614871be7b711a10a"
     }
+  },
+  "npm": {
+    "@opentelemetry/api@1.9.0": {
+      "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="
+    },
+    "zod@3.25.51": {
+      "integrity": "sha512-TQSnBldh+XSGL+opiSIq0575wvDPqu09AqWe1F7JhUMKY+M91/aGlK4MhpVNO7MgYfHcVCB1ffwAUTJzllKJqg=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@ggpwnkthx/generic-cli@0.1.1"
+    ]
   }
 }
