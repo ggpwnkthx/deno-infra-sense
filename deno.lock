@@ -2,7 +2,7 @@
   "version": "5",
   "specifiers": {
     "jsr:@ggpwnkthx/generic-cli@*": "0.1.0",
-    "jsr:@ggpwnkthx/generic-cli@0.1.2": "0.1.2",
+    "jsr:@ggpwnkthx/generic-cli@0.1.3": "0.1.3",
     "jsr:@std/assert@0.224": "0.224.0",
     "jsr:@std/cli@*": "1.0.19",
     "jsr:@std/cli@1.0.19": "1.0.19",
@@ -37,8 +37,8 @@
         "npm:zod@3.25.51"
       ]
     },
-    "@ggpwnkthx/generic-cli@0.1.2": {
-      "integrity": "35ad73db50650b4ac302fea36ac05aea3bd33004329ec59c288c11ee3152cb08",
+    "@ggpwnkthx/generic-cli@0.1.3": {
+      "integrity": "d981fac94c6f671f4ceee35aaaa3889485f1f9aa934be1e897177c17ee622785",
       "dependencies": [
         "jsr:@std/cli@1.0.19",
         "jsr:@std/fmt@1.0.8",
@@ -106,7 +106,8 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@ggpwnkthx/generic-cli@0.1.2"
+      "jsr:@ggpwnkthx/generic-cli@0.1.3",
+      "jsr:@std/fs@1.0.18"
     ]
   }
 }
