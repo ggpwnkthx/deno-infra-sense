@@ -2,7 +2,7 @@
   "version": "5",
   "specifiers": {
     "jsr:@ggpwnkthx/generic-cli@*": "0.1.0",
-    "jsr:@ggpwnkthx/generic-cli@0.1.1": "0.1.1",
+    "jsr:@ggpwnkthx/generic-cli@0.1.2": "0.1.2",
     "jsr:@std/assert@0.224": "0.224.0",
     "jsr:@std/cli@*": "1.0.19",
     "jsr:@std/cli@1.0.19": "1.0.19",
@@ -37,16 +37,15 @@
         "npm:zod@3.25.51"
       ]
     },
-    "@ggpwnkthx/generic-cli@0.1.1": {
-      "integrity": "0c7540d9347cb2323f490881978e36e7729f406a1b4a28b6d6a6679b381a58cd",
+    "@ggpwnkthx/generic-cli@0.1.2": {
+      "integrity": "35ad73db50650b4ac302fea36ac05aea3bd33004329ec59c288c11ee3152cb08",
       "dependencies": [
         "jsr:@std/cli@1.0.19",
         "jsr:@std/fmt@1.0.8",
         "jsr:@std/fs@1.0.18",
         "jsr:@std/jsonc@1.0.2",
         "jsr:@std/yaml",
-        "npm:@opentelemetry/api",
-        "npm:zod@3.25.51"
+        "npm:@opentelemetry/api"
       ]
     },
     "@std/assert@0.224.0": {
@@ -107,7 +106,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@ggpwnkthx/generic-cli@0.1.1"
+      "jsr:@ggpwnkthx/generic-cli@0.1.2"
     ]
   }
 }

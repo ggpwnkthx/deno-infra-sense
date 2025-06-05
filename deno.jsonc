@@ -1,9 +1,10 @@
 {
   "name": "@ggpwnkthx/infra-sense",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "imports": {
-    "@ggpwnkthx/generic-cli": "jsr:@ggpwnkthx/generic-cli@0.1.1",
+    "@std/fs": "jsr:@std/fs@1.0.18",
+    "@ggpwnkthx/generic-cli": "jsr:@ggpwnkthx/generic-cli@0.1.2",
     "@ggpwnkthx/infra-sense": "./mod.ts"
   },
   "exports": "./mod.ts",
@@ -16,6 +17,6 @@
     "proseWrap": "always"
   },
   "tasks": {
-    "detect": "deno run --allow-env=CONTAINER,KUBERNETES_SERVICE_HOST --allow-net=kubernetes.default.svc:53 --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv,/run/.containerenv,/run/systemd/nspawn/in_container src/cli.ts --output=json detect"
+    "detect": "deno run --allow-env=CONTAINER,KUBERNETES_SERVICE_HOST --allow-net=kubernetes.default.svc:53 --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv,/run/.containerenv,/run/systemd/nspawn/in_container src/cli.ts detect"
   }
 }

@@ -1,89 +1,67 @@
-# @ggpwnkthx/deno-infra-sense
-
-## Table of Contents
-
-1. [Introduction](#introduction)
-2. [Features](#features)
-3. [Permissions](#permissions)
-4. [Prerequisites](#prerequisites)
-5. [Installation](#installation)
-6. [Project Structure](#project-structure)
-7. [Usage](#usage)
-8. [API Reference](#api-reference)
-9. [Detection Logic](#detection-logic)
-10. [Development](#development)
-11. [Contributing](#contributing)
-12. [License](#license)
-
-## Introduction
+# @ggpwnkthx/infra-sense
 
 `@ggpwnkthx/infra-sense` is a lightweight Deno library and CLI tool designed to
 detect the container platform or host environment in which a Deno process is
-running. It supports a variety of container runtimes, including Docker, Podman,
-CRI-O, containerd, Rkt, LXC/LXD, systemd-nspawn, and Kubernetes.
+running. It supports various container runtimes (Docker, Podman, CRI-O,
+containerd, Rkt, LXC/LXD, systemd-nspawn) and Kubernetes, providing a simple API
+and command-line interface for reliable environment detection.
 
-This project aims to provide a simple API and a CLI interface for reliably
-determining the current container context, using environment-based detection
-strategies and caching to minimize overhead.
+## Table of Contents
+
+- [Features](#features)
+- [Permissions](#permissions)
+- [Project Structure](#project-structure)
+- [Usage](#usage)
+  - [Library API](#library-api)
+  - [Command-Line Interface (CLI)](#command-line-interface-cli)
+- [Detection Logic](#detection-logic)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- **Environment-Based Detection:** Checks environment variables, service account
-  files, and in-cluster DNS to identify Kubernetes, and container-specific
-  markers for other runtimes.
-- **Caching:** Results are cached for 30 seconds to avoid redundant checks.
-- **Safe Detection:** Errors during detection are caught and logged without
-  breaking the detection flow.
-- **Flexible Logging:** Integrates with `@std/log` to offer JSON or
-  text-formatted logging, with optional file handling.
-- **CLI and Library Modes:** Can be used as a standalone CLI or imported as a
-  library in other Deno projects.
+- **Container Runtime Detection**: Identifies standalone runtimes such as
+  Docker, Podman, CRI-O, containerd, Rkt, LXC/LXD, and systemd-nspawn by
+  inspecting environment variables or runtime-specific files.
+- **Kubernetes Detection**: Detects if running inside a Kubernetes cluster by
+  checking environment variables, service account files, and in-cluster DNS
+  resolution. Distinguishes between CRI-O, Docker, or other runtimes when in
+  Kubernetes.
+- **Host Fallback**: If no container runtime is detected, classifies the
+  environment as Host.
+- **Safe Detection**: All detection routines are wrapped to catch and log errors
+  without interrupting detection flow.
+- **Caching**: Results are cached for 30 seconds to avoid repeated checks within
+  a short timeframe.
+- **Minimal Dependencies**: Built on Deno standard libraries and
+  `@ggpwnkthx/generic-cli` for CLI functionality.
+- **Logger Abstraction**: Accepts any object implementing a simple `Logger`
+  interface for debug, info, warning, and error messages.
 
 ## Permissions
 
-This project requires these minimal permissions:
+The detection routines require the following Deno permissions:
 
 - `--allow-env`
-  - `LOG_LEVEL`
-  - `LOG_JSON`
-  - `LOG_FILE`
   - `CONTAINER`
   - `KUBERNETES_SERVICE_HOST`
-- `--allow-net`
-  - `kubernetes.default.svc:53`
 - `--allow-read`
-  - `deno.jsonc`
+  - `./deno.jsonc`
   - `/var/run/secrets/kubernetes.io/serviceaccount`
   - `/.dockerenv`
   - `/run/.containerenv`
   - `/run/systemd/nspawn/in_container`
+- `--allow-net`
+  - `kubernetes.default.svc:53`
 
-Example CLI invocation:
-
-```bash
-deno run --allow-env --allow-net --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv src/cli.ts
-```
-
-## Prerequisites
-
-- **Deno** 2.0 or higher.
-- Permissions as listed above to allow environment, read, and network
-  operations.
-
-## Installation
-
-To use the library in your Deno project, import the module directly from this
-repository:
-
-```ts
-import detect from "jsr:@ggpwnkthx/infra-sense";
-```
-
-Alternatively, clone the repository and run locally:
+Example invocation for CLI:
 
 ```bash
-git clone https://github.com/ggpwnkthx/deno-infra-sense.git
-cd infra-sense
+deno run \
+  --allow-env=CONTAINER,KUBERNETES_SERVICE_HOST \
+  --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv,/run/.containerenv,/run/systemd/nspawn/in_container \
+  --allow-net=kubernetes.default.svc:53 \
+  src/cli.ts
 ```
 
 ## Project Structure
@@ -92,190 +70,136 @@ cd infra-sense
 infra-sense/
 ├── src/
 │   ├── detection/
-│   │   ├── mod.ts
-│   │   └── utils.ts
-│   ├── cli.ts
-│   ├── logger.ts
-│   └── mod.ts
-├── deno.jsonc
-└── README.md
+│   │   ├── mod.ts         # Core detection orchestrator
+│   │   ├── types.ts       # ContainerPlatform enums and types
+│   │   └── utils.ts       # Individual detection routines
+│   ├── cli.ts             # CLI entrypoint using `@ggpwnkthx/generic-cli`
+│   ├── mod.ts             # Library API: `detect` function
+│   └── types.ts           # Re-exports detection types
+├── deno.jsonc             # Project configuration, imports, and tasks
+├── mod.ts                 # Re-exports library API and types from `src/`
+└── README.md              # This documentation
 ```
-
-- `src/detection/mod.ts`: Core detection logic that orchestrates container
-  runtime checks.
-- `src/detection/utils.ts`: Refactored utility functions for environment-based
-  detection.
-- `src/cli.ts`: Entry point for the command-line interface.
-- `src/logger.ts`: Logging setup and helper functions wrapping `@std/log`.
-- `src/mod.ts`: Primary exported function for library usage.
-- `deno.jsonc`: Project configuration, tasks, and metadata.
-- `README.md`: Project documentation (this file).
 
 ## Usage
 
-### As a Library
+### Library API
 
 Import and call the `detect` function in your Deno application:
 
 ```ts
 import detect from "jsr:@ggpwnkthx/infra-sense";
 
-try {
-  const platform = await detect();
-  console.log("Detected platform:", platform);
-} catch (error) {
-  console.error("Detection failed:", error);
+async function main() {
+  try {
+    const platform = await detect();
+    console.log(platform);
+  } catch (error) {
+    console.error("Detection failed:", error);
+  }
+}
+
+if (import.meta.main) {
+  main();
 }
 ```
 
-- **`detect()`**: Performs detection and returns a `ContainerPlatform` enum
-  value indicating the detected environment.
+- **Function**: `detect(logger?: Logger): Promise<ContainerPlatform>`
+  - `logger` (optional): Any object implementing the `Logger` interface
+    (defaults to `console`).
+  - Resolves to a `ContainerPlatform` object with properties:
+    - `type`: `"kubernetes" | "standalone" | "host"`
+    - `runtime`: runtime identifier (e.g., `"docker"`, `"crio"`, `"none"`)
+    - `displayName`: human-friendly display string (e.g., `"Docker"`,
+      `"Kubernetes (CRI-O)"`).
 
 ### Command-Line Interface (CLI)
 
-Run the CLI directly with the required Deno permissions:
+The CLI bundled in `src/cli.ts` registers a `detect` command:
 
 ```bash
-deno run detect [options]
+deno run src/cli.ts detect
 ```
 
 **Options:**
 
-- `--help`: Show usage information and exit.
-- `--version`: Display the project name and version (as defined in `deno.jsonc`)
-  and exit.
-- `--verbose`: Enable debug-level logging.
-- `--json`: Output logs in JSON format.
-- Any unknown arguments will cause the CLI to exit with status code 1.
+- `--help` / `-h`: Show help.
+- `--version` / `-V`: Print version from `deno.jsonc`.
+- `--quiet` / `-q`: Suppress non-error output.
+- `--verbose` / `-v`: Enable debug output.
+- `--output=[text|json|yaml]`: Control output format (default: `text`).
 
 **Examples:**
 
-1. **Basic detection:**
-   ```bash
-   deno run detect
-   ```
+- **Basic detection (text output)**
+  ```bash
+  deno run src/cli.ts detect
+  ```
 
-2. **Verbose (debug) output:**
-   ```bash
-   deno run detect --verbose
-   ```
+- **JSON output**
+  ```bash
+  deno run src/cli.ts --output=json detect
+  ```
 
-3. **JSON-formatted logs:**
-   ```bash
-   deno run detect --json
-   ```
-
-## API Reference
-
-### `detect(logger?: Logger): Promise<ContainerPlatform>`
-
-- **Parameters:**
-  - `logger` (optional): An instance of `@std/log.Logger`. If not provided, uses
-    the default logger from `getDefaultLogger()`.
-- **Returns:** A `Promise` that resolves to a value of the `ContainerPlatform`
-  enum.
-
-**Example:**
-
-```ts
-import detect from "jsr:@ggpwnkthx/infra-sense";
-
-const platform = await detect();
-console.log(platform); // e.g., "Docker"
-```
-
-### `ContainerPlatform` Enum
-
-Represents all supported container platforms and the host environment:
-
-- `KubernetesCriO` - "Kubernetes (CRI-O)"
-- `KubernetesDocker` - "Kubernetes (Docker)"
-- `KubernetesOther` - "Kubernetes (other)"
-- `Docker` - "Docker"
-- `Podman` - "Podman"
-- `CRIO` - "CRI-O"
-- `DockerCgroup` - "Docker (via environment variable)"
-- `Containerd` - "containerd"
-- `Rkt` - "rkt"
-- `LXCLXD` - "LXC/LXD"
-- `SystemdNspawn` - "systemd-nspawn"
-- `Host` - "Host (no recognized container)"
+- **Verbose (debug) logs**
+  ```bash
+  deno run src/cli.ts --verbose detect
+  ```
 
 ## Detection Logic
 
-The refactored detection logic proceeds as follows:
-
 1. **Cache Check**
-   - If the last detection result is less than 30 seconds old and `forceRefresh`
-     is not enabled, returns the cached enum value.
+   - Cached result is returned if it is less than 30 seconds old and
+     `forceRefresh` is not set.
 
-2. **Kubernetes Check**
-   - Uses `detectKubernetes()` which checks:
-     1. `KUBERNETES_SERVICE_HOST` environment variable.
-     2. Presence of `/var/run/secrets/kubernetes.io/serviceaccount`.
-     3. DNS lookup for `kubernetes.default.svc`.
-   - If any of these checks succeed, it is considered “inside Kubernetes.”
-   - Within Kubernetes, to distinguish CRI-O vs. Docker vs. Other:
-     1. `detectCrio()` checks `container` environment variable or
-        `/run/.containerenv` contents for “crio.”
-     2. `detectDockerCgroup()` checks if `container` environment variable equals
-        “docker.”
-     3. Otherwise, returns `KubernetesOther`.
+2. **Kubernetes Detection**
+   - Checks `KUBERNETES_SERVICE_HOST` environment variable.
+   - Verifies existence of `/var/run/secrets/kubernetes.io/serviceaccount`.
+   - Performs DNS resolution for `kubernetes.default.svc`.
+   - If running in Kubernetes:
+     1. Check CRI-O via `Content of /run/.containerenv` or `container` env var.
+     2. Check Docker via cgroup (`container` env var).
+     3. If neither, classify as `KubernetesOther`.
 
-3. **Standalone Detectors (Non-Kubernetes)**\
-   In order of priority, each detector inspects environment variables or
-   specific files:
-   1. **Docker** (`detectDockerEnv`) — existence of `/.dockerenv`.
-   2. **Podman** (`detectPodman`) — `container` env var equals “podman” or
-      `/run/.containerenv` contains “podman.”
-   3. **CRI-O** (`detectCrio`) — `container` env var equals “crio” or
-      `/run/.containerenv` contains “crio.”
-   4. **Docker via Env** (`detectDockerCgroup`) — `container` env var equals
-      “docker.”
-   5. **containerd** (`detectContainerd`) — `container` env var equals
-      “containerd.”
-   6. **rkt** (`detectRkt`) — `container` env var equals “rkt.”
-   7. **LXC/LXD** (`detectLXC`) — `container` env var equals “lxc.”
-   8. **systemd-nspawn** (`detectSystemdNspawn`) — `container` env var equals
-      “systemd-nspawn” or existence of `/run/systemd/nspawn/in_container`.
+3. **Standalone Runtime Detection (in order)**
+   - **Docker**: existence of `/.dockerenv`.
+   - **Podman**: `container` env var equals `"podman"` or `/run/.containerenv`
+     contains `"podman"`.
+   - **CRI-O**: `container` env var equals `"crio"` or `/run/.containerenv`
+     contains `"crio"`.
+   - **Docker via cgroup**: `container` env var equals `"docker"`.
+   - **containerd**: `container` env var equals `"containerd"`.
+   - **rkt**: `container` env var equals `"rkt"`.
+   - **LXC/LXD**: `container` env var equals `"lxc"`.
+   - **systemd-nspawn**: `container` env var equals `"systemd-nspawn"` or
+     existence of `/run/systemd/nspawn/in_container`.
 
 4. **Host Fallback**
-   - If no detector matches, returns `Host`.
+   - If no container detected, returns the `Host` platform (`runtime: "none"`).
 
-All detectors use a `safeDetect` wrapper to catch and log errors without halting
-the detection process.
+All detection functions are wrapped in a `safeDetect` helper to catch errors,
+log them, and return `false` rather than throwing.
 
 ## Development
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/ggpwnkthx/deno-infra-sense.git
-   cd deno-infra-sense
-   ```
+1. **Clone the repository**
 
-2. **Install dependencies:**\
-   Deno manages dependencies automatically via remote imports; ensure you have
-   Deno installed.
+```bash
+git clone https://github.com/ggpwnkthx/deno-infra-sense.git
+cd infra-sense
+```
 
-3. **Run Formatting and Linting:**
-   ```bash
-   deno fmt
-   deno lint
-   ```
-
-4. **Run CLI in Development Mode:**
-   ```bash
-   deno run --allow-env=LOG_LEVEL,LOG_JSON,LOG_FILE,CONTAINER,KUBERNETES_SERVICE_HOST --allow-net=kubernetes.default.svc:53 --deny-net --allow-read=./deno.jsonc,/var/run/secrets/kubernetes.io/serviceaccount,/.dockerenv,/run/.containerenv,/run/systemd/nspawn/in_container src/cli.ts --verbose
-   ```
+2. **Ensure Deno is installed**\
+   Requires Deno v2.0 or higher.
 
 ## Contributing
 
-Contributions are welcome! Please follow these guidelines:
+Contributions and feedback are welcome. Please follow these guidelines:
 
-1. Fork the repository and create a new branch for your feature or bugfix.
-2. Write tests and ensure all existing tests pass.
-3. Follow the existing code style (see `deno fmt` settings in `deno.jsonc`).
-4. Submit a pull request with a clear description of your changes.
+1. Fork the repository and create a feature branch.
+2. Adhere to the existing code style (run `deno fmt`).
+3. Add or update tests if necessary.
+4. Submit a pull request with a description of your changes.
 
 ## License
 

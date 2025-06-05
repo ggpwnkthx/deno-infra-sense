@@ -11,7 +11,7 @@ import {
   detectRkt,
   detectSystemdNspawn,
 } from "../detection/utils.ts";
-import type { Logger } from "../logger.ts";
+import type { Logger } from "../types.ts";
 import type { ContainerPlatform, ContainerPlatformKey } from "./types.ts";
 import { ContainerPlatforms } from "./types.ts";
 

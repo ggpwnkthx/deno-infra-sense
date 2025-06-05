@@ -1,6 +1,6 @@
 // src/mod.ts
 
-import type { Logger } from "./logger.ts";
+import type { Logger } from "./types.ts";
 import detectContainerPlatform from "./detection/mod.ts";
 import type { ContainerPlatform } from "./detection/types.ts";
 
